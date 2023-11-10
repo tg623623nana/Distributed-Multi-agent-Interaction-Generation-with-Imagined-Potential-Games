@@ -128,7 +128,6 @@ sim.demo_resolve_random_obstacle_case(folder_name)
 
 ### Use "draw.py" to draw Results
 
-#### Draw Results
 Go to "draw.py" and enter the address of the folder that you want to regenerate the results.
 ```
 folder_name = "[folder_address]/"
