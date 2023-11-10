@@ -1,0 +1,38 @@
+------------ Agents information ------------
+agents number = 2
+state dimension = 4
+input dimension = 2
+Sampling Time = 0.1
+
+ ---- agent 1 : 
+size (radius) = 0
+initial_state = [0. 0. 0. 0.]
+target_state = [5. 0. 0. 0.]
+vmin & vmax = -10, 10
+umin & umax = [-50, -1.5707963267948966], [50, 1.5707963267948966]
+safety_dis = 1.2
+Q_cost = [0.1 0.1 0.  0. ]
+R_cost = [1 1]
+D_cost = 100
+B_cost = 10
+
+ ---- agent 2 : 
+size (radius) = 0
+initial_state = [5.        0.        3.1415927 0.       ]
+target_state = [0.        0.        3.1415927 0.       ]
+vmin & vmax = -10, 10
+umin & umax = [-50, -1.5707963267948966], [50, 1.5707963267948966]
+safety_dis = 2.0
+Q_cost = [0.1 0.1 0.  0. ]
+R_cost = [1 1]
+D_cost = 100
+B_cost = 10
+
+------------ boundary information ------------
+boundary = None
+boundary_range = None
+
+------------ solver information ------------
+horizon = 40
+ilqr solver type = Distributed
+constraints threshold = 0.001

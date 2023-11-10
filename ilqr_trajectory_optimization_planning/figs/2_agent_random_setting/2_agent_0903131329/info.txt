@@ -1,0 +1,43 @@
+------------ Agents information ------------
+agents number = 2
+state dimension = 4
+input dimension = 2
+Sampling Time = 0.1
+
+ ---- agent 1 : 
+size (radius) = 0.4
+initial_state = [ 6.07     -0.89      2.940757  0.      ]
+target_state = [ 0.3       -0.39       1.8172289  0.       ]
+vmin & vmax = -5, 5
+umin & umax = [-2, -1.5707963267948966], [2, 1.5707963267948966]
+safety_dis = 1.4
+Q_cost = [0.01 0.01 0.   0.  ]
+R_cost = [1 1]
+D_cost = 40
+B_cost = 10
+
+ ---- agent 2 : 
+size (radius) = 0.4
+initial_state = [ 0.23       -0.53        0.28752628  0.        ]
+target_state = [7.91      1.82      0.5455455 0.       ]
+vmin & vmax = -5, 5
+umin & umax = [-2, -1.5707963267948966], [2, 1.5707963267948966]
+safety_dis = 1.7
+Q_cost = [0.01 0.01 0.   0.  ]
+R_cost = [1 1]
+D_cost = 40
+B_cost = 10
+
+------------ boundary information ------------
+boundary = [-2,-3,10, 3]
+boundary_range = [-2,-3,10, 3]
+
+------------ circle obstacle information ------------
+circle obstacle number = 2
+   circle obstacle 1 : [4.  2.5], radius = 2
+   circle obstacle 2 : [ 4.  -2.5], radius = 2
+
+------------ solver information ------------
+horizon = 40
+ilqr solver type = Distributed
+constraints threshold = 0.001
