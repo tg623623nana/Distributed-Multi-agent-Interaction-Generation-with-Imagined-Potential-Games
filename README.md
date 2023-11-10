@@ -201,29 +201,11 @@ The prediction of others' trajectories will be drawn when there are only 2 agent
 </p>
 The open-loop trajectory images generate during the simulation may not have same x-y range, therefore, these pictures will be regenerated after the whole simulation finish with same x-y range.
 
-### Use "draw.py" to draw Results / Prediction
+### Use "draw.py" to draw Results
 
 #### Draw Results
-Enter the address of the folder that you want to regenerate the results.
+Go to "draw.py" and enter the address of the folder that you want to regenerate the results.
 ```
 folder_name = "[folder_address]/"
 ```
 Then run "draw.py". It will create a folder called 'rebuild' and generate results inside.
-
-#### Draw Prediction
-**What is this?**
-
-Create an open-loop solution video at a specific time step, which includes the predicted behavior of others, so that you can check the performance.
-
-**How to assign the specific time step that you want to check the open-loop solution?**
-
-Find below code in "draw.py", change the 'total_num' to the time step that you want to generate the open-loop solution video with prediction.
-```
-#############################
-# Draw prediction video at certain time step
-#############################
-time_step = total_num
-if time_step < total_num:
-    draw_fxn.save_prediction_animation(agents, plot_boundary, save_name, time_step, boundary, circle_obs)
-```
-Notice: You can only enter the time step that you have already simulated.
