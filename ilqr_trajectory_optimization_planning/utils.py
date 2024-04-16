@@ -1811,3 +1811,18 @@ def update_boundary_with_agents(plot_boundary, agents):
     #     plot_boundary[3] = ymax
 
     return plot_boundary
+
+#####################################
+# For Time-Varying goal
+#####################################
+
+def generate_timeViarying_goal(goal_1,goal_2, horizon):
+    agent_target_waypoints = jnp.zeros((horizon, 4))
+
+    half_horizon = round(horizon * 0.5)
+    agent_target_waypoints = agent_target_waypoints.at[:half_horizon, :2].set(
+        np.tile(goal_1, (half_horizon, 1)))
+    agent_target_waypoints = agent_target_waypoints.at[half_horizon:horizon, :2].set(
+        np.tile(goal_2, (horizon - half_horizon, 1)))
+
+    return agent_target_waypoints
