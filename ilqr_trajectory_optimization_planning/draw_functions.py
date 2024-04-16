@@ -6,6 +6,7 @@ Created on 2023/10/12
 @author: Pin-Yun Hung
 """
 import os
+import numpy as np
 from scene_objects import *
 import matplotlib.pyplot as plt
 from matplotlib.patches import Circle, Rectangle
@@ -381,14 +382,38 @@ class DrawClass:
 
         # draw full trajectory
         for i in range(agents.agent_num):
+
+            # plot the initial state
             x0 = agents.agent[i].initial_state[0]
             y0 = agents.agent[i].initial_state[1]
-            xf = agents.agent[i].target_state[0]
-            yf = agents.agent[i].target_state[1]
+            ax.plot(x0, y0, pos_type, color=self_color[i], markerfacecolor='None')
 
-            # plot the initial state & target state
-            plt.plot(x0, y0, pos_type, color=self_color[i], markerfacecolor='None')
-            plt.plot(xf, yf, goal_type, color=self_color[i])
+            # plot the target state
+            if agents.agent[i].is_goal_timeVarying:
+                target_state = agents.agent[i].target_series[-1]
+                xf = []
+                yf = []
+                waypoints = []
+                for idx in range(target_state.shape[0]):
+                    waypoint = [target_state[idx, 0], target_state[idx, 1]]
+                    if waypoint not in waypoints:
+                        waypoints.append(waypoint)
+                        xf.append(waypoint[0])
+                        yf.append(waypoint[1])
+            else:
+                xf = agents.agent[i].target_state[0]
+                yf = agents.agent[i].target_state[1]
+
+            ax.plot(xf, yf, goal_type, color=self_color[i])
+
+            # x0 = agents.agent[i].initial_state[0]
+            # y0 = agents.agent[i].initial_state[1]
+            # xf = agents.agent[i].target_state[0]
+            # yf = agents.agent[i].target_state[1]
+            #
+            # # plot the initial state & target state
+            # plt.plot(x0, y0, pos_type, color=self_color[i], markerfacecolor='None')
+            # plt.plot(xf, yf, goal_type, color=self_color[i])
 
             # draw trajectory
             traj = np.asarray(agents.agent[i].trajectory)
@@ -608,14 +633,37 @@ class DrawClass:
         for i in range(agents.agent_num):
             n1 = i * agents.state_dim
 
+            # plot the initial state
             x0 = agents.agent[i].initial_state[0]
             y0 = agents.agent[i].initial_state[1]
-            xf = agents.agent[i].target_state[0]
-            yf = agents.agent[i].target_state[1]
-
-            # plot the initial state & target state
             ax.plot(x0, y0, pos_type, color=self_color[i], markerfacecolor='None')
+
+            # plot the target state
+            if agents.agent[i].is_goal_timeVarying:
+                target_state = agents.agent[i].target_series[k]
+                xf = []
+                yf = []
+                waypoints = []
+                for idx in range(target_state.shape[0]):
+                    waypoint = [target_state[idx, 0], target_state[idx, 1]]
+                    if waypoint not in waypoints:
+                        waypoints.append(waypoint)
+                        xf.append(waypoint[0])
+                        yf.append(waypoint[1])
+            else:
+                xf = agents.agent[i].target_state[0]
+                yf = agents.agent[i].target_state[1]
+
             ax.plot(xf, yf, goal_type, color=self_color[i])
+
+            # x0 = agents.agent[i].initial_state[0]
+            # y0 = agents.agent[i].initial_state[1]
+            # xf = agents.agent[i].target_state[0]
+            # yf = agents.agent[i].target_state[1]
+
+            # # plot the initial state & target state
+            # ax.plot(x0, y0, pos_type, color=self_color[i], markerfacecolor='None')
+            # ax.plot(xf, yf, goal_type, color=self_color[i])
 
             # draw current position (include size and safety distance)
             traj = np.asarray(agents.agent[i].trajectory)
@@ -740,14 +788,37 @@ class DrawClass:
             n1 = i * agents.state_dim
             n2 = k + 1
 
+            # plot the initial state
             x0 = agents.agent[i].initial_state[0]
             y0 = agents.agent[i].initial_state[1]
-            xf = agents.agent[i].target_state[0]
-            yf = agents.agent[i].target_state[1]
+            ax.plot(x0, y0, pos_type, color=self_color[i], markerfacecolor='None')
 
-            # plot the initial state & target state
-            ax.plot(x0, y0, pos_type, color=self_color[i], markerfacecolor='None', label='start')  # label 1
-            ax.plot(xf, yf, goal_type, color=self_color[i], label='goal')  # label 2
+            # plot the target state
+            if agents.agent[i].is_goal_timeVarying:
+                target_state = agents.agent[i].target_series[k]
+                xf = []
+                yf = []
+                waypoints = []
+                for idx in range(target_state.shape[0]):
+                    waypoint = [target_state[idx, 0], target_state[idx, 1]]
+                    if waypoint not in waypoints:
+                        waypoints.append(waypoint)
+                        xf.append(waypoint[0])
+                        yf.append(waypoint[1])
+            else:
+                xf = agents.agent[i].target_state[0]
+                yf = agents.agent[i].target_state[1]
+
+            ax.plot(xf, yf, goal_type, color=self_color[i])
+
+            # x0 = agents.agent[i].initial_state[0]
+            # y0 = agents.agent[i].initial_state[1]
+            # xf = agents.agent[i].target_state[0]
+            # yf = agents.agent[i].target_state[1]
+            #
+            # # plot the initial state & target state
+            # ax.plot(x0, y0, pos_type, color=self_color[i], markerfacecolor='None', label='start')  # label 1
+            # ax.plot(xf, yf, goal_type, color=self_color[i], label='goal')  # label 2
 
             # draw current position (include size and safety distance)
             traj = np.asarray(agents.agent[i].trajectory)
@@ -905,14 +976,37 @@ class DrawClass:
         for i in range(agents.agent_num):
             n1 = i * agents.state_dim
 
+            # plot the initial state
             x0 = agents.agent[i].initial_state[0]
             y0 = agents.agent[i].initial_state[1]
-            xf = agents.agent[i].target_state[0]
-            yf = agents.agent[i].target_state[1]
-
-            # plot the initial state & target state
             ax.plot(x0, y0, pos_type, color=self_color[i], markerfacecolor='None')
+
+            # plot the target state
+            if agents.agent[i].is_goal_timeVarying:
+                target_state = agents.agent[i].target_series[k]
+                xf = []
+                yf = []
+                waypoints = []
+                for idx in range(target_state.shape[0]):
+                    waypoint = [target_state[idx, 0], target_state[idx, 1]]
+                    if waypoint not in waypoints:
+                        waypoints.append(waypoint)
+                        xf.append(waypoint[0])
+                        yf.append(waypoint[1])
+            else:
+                xf = agents.agent[i].target_state[0]
+                yf = agents.agent[i].target_state[1]
+
             ax.plot(xf, yf, goal_type, color=self_color[i])
+
+            # x0 = agents.agent[i].initial_state[0]
+            # y0 = agents.agent[i].initial_state[1]
+            # xf = agents.agent[i].target_state[0]
+            # yf = agents.agent[i].target_state[1]
+            #
+            # # plot the initial state & target state
+            # ax.plot(x0, y0, pos_type, color=self_color[i], markerfacecolor='None')
+            # ax.plot(xf, yf, goal_type, color=self_color[i])
 
             # draw current position (include size and safety distance)
             traj = agents.agent[i].sol_series[sim_num][0]
@@ -1040,14 +1134,37 @@ class DrawClass:
         for i in range(agents.agent_num):
             n1 = i * agents.state_dim
 
+            # plot the initial state
             x0 = agents.agent[i].initial_state[0]
             y0 = agents.agent[i].initial_state[1]
-            xf = agents.agent[i].target_state[0]
-            yf = agents.agent[i].target_state[1]
+            ax.plot(x0, y0, pos_type, color=self_color[i], markerfacecolor='None')
 
-            # plot the initial state & target state
-            ax.plot(x0, y0, pos_type, color=self_color[i], markerfacecolor='None', label='start')  # label 1
-            ax.plot(xf, yf, goal_type, color=self_color[i], label='goal')  # label 2
+            # plot the target state
+            if agents.agent[i].is_goal_timeVarying:
+                target_state = agents.agent[i].target_series[k]
+                xf = []
+                yf = []
+                waypoints = []
+                for idx in range(target_state.shape[0]):
+                    waypoint = [target_state[idx, 0], target_state[idx, 1]]
+                    if waypoint not in waypoints:
+                        waypoints.append(waypoint)
+                        xf.append(waypoint[0])
+                        yf.append(waypoint[1])
+            else:
+                xf = agents.agent[i].target_state[0]
+                yf = agents.agent[i].target_state[1]
+
+            ax.plot(xf, yf, goal_type, color=self_color[i])
+
+            # x0 = agents.agent[i].initial_state[0]
+            # y0 = agents.agent[i].initial_state[1]
+            # xf = agents.agent[i].target_state[0]
+            # yf = agents.agent[i].target_state[1]
+            #
+            # # plot the initial state & target state
+            # ax.plot(x0, y0, pos_type, color=self_color[i], markerfacecolor='None', label='start')  # label 1
+            # ax.plot(xf, yf, goal_type, color=self_color[i], label='goal')  # label 2
 
             # draw current position (include size and safety distance)
             traj = agents.agent[i].sol_series[sim_num][0]
@@ -1348,14 +1465,38 @@ class DrawClass:
         axes = ax[0]
         axes.set_title('Initial')
         for i in range(agents.agent_num):
+            # plot the initial state
             x = agents.agent[i].initial_state[0]
             y = agents.agent[i].initial_state[1]
-            xf = agents.agent[i].target_state[0]
-            yf = agents.agent[i].target_state[1]
-
-            # plot the initial state & target state
             axes.plot(x, y, pos_type, color=self_color[i], markerfacecolor='None', label='start')  # legend 1
+
+            # plot the target state
+            target_size = np.shape(agents.agent[i].target_state)[0]
+            theta_fs = []
+            if target_size > 1:
+                xf = []
+                yf = []
+                waypoints = []
+                for idx in range(target_size):
+                    waypoint = [agents.agent[i].target_state[idx, 0], agents.agent[i].target_state[idx, 1]]
+                    if waypoint not in waypoints:
+                        waypoints.append(waypoint)
+                        xf.append(agents.agent[i].target_state[idx, 0])
+                        yf.append(agents.agent[i].target_state[idx, 1])
+                        theta_fs.append(agents.agent[i].target_state[idx, 2])
+            else:
+                xf = agents.agent[i].target_state[0]
+                yf = agents.agent[i].target_state[1]
+
             axes.plot(xf, yf, goal_type, color=self_color[i], label='goal')  # legend 2
+            # x = agents.agent[i].initial_state[0]
+            # y = agents.agent[i].initial_state[1]
+            # xf = agents.agent[i].target_state[0]
+            # yf = agents.agent[i].target_state[1]
+
+            # # plot the initial state & target state
+            # axes.plot(x, y, pos_type, color=self_color[i], markerfacecolor='None', label='start')  # legend 1
+            # axes.plot(xf, yf, goal_type, color=self_color[i], label='goal')  # legend 2
 
             # plot the agent size & safety distance at the initial state
             theta = agents.agent[i].initial_state[2]
@@ -1397,20 +1538,56 @@ class DrawClass:
         axes = ax[1]
         axes.set_title('Target')
         for i in range(agents.agent_num):
+            # plot the initial state
             x = agents.agent[i].initial_state[0]
             y = agents.agent[i].initial_state[1]
-            xf = agents.agent[i].target_state[0]
-            yf = agents.agent[i].target_state[1]
-
-            # plot the initial state & target state
             axes.plot(x, y, pos_type, color=self_color[i], markerfacecolor='None')
+
+            # plot the target state
+            target_size = np.shape(agents.agent[i].target_state)[0]
+            theta_fs = []
+            if target_size > 1:
+                xf = []
+                yf = []
+                waypoints = []
+                for idx in range(target_size):
+                    waypoint = [agents.agent[i].target_state[idx, 0], agents.agent[i].target_state[idx, 1]]
+                    if waypoint not in waypoints:
+                        waypoints.append(waypoint)
+                        xf.append(agents.agent[i].target_state[idx, 0])
+                        yf.append(agents.agent[i].target_state[idx, 1])
+                        theta_fs.append(agents.agent[i].target_state[idx, 2])
+            else:
+                xf = agents.agent[i].target_state[0]
+                yf = agents.agent[i].target_state[1]
+
             axes.plot(xf, yf, goal_type, color=self_color[i])
 
+            # x = agents.agent[i].initial_state[0]
+            # y = agents.agent[i].initial_state[1]
+            # xf = agents.agent[i].target_state[0]
+            # yf = agents.agent[i].target_state[1]
+            #
+            # # plot the initial state & target state
+            # axes.plot(x, y, pos_type, color=self_color[i], markerfacecolor='None')
+            # axes.plot(xf, yf, goal_type, color=self_color[i])
+
             # plot the agent size & safety distance at the target state
-            axes.plot(xf, yf, traj_type, color=self_color[i], markersize='0.5')
-            theta_f = agents.agent[i].target_state[2]
-            axes.add_patch(Circle(xy=(xf, yf), radius=agents.agent[i].safety_dis / 2, alpha=0.1, color=self_color[i]))
-            axes.add_patch(Circle(xy=(xf, yf), radius=agents.agent[i].radius, alpha=0.3, color=self_color[i]))
+
+            if target_size > 1:
+                for idx in range(len(xf)):
+                    xf_i = xf[idx]
+                    yf_i = yf[idx]
+                    axes.plot(xf_i, yf_i, traj_type, color=self_color[i], markersize='0.5')
+                    theta_f = theta_fs[idx]
+                    axes.add_patch(
+                        Circle(xy=(xf_i, yf_i), radius=agents.agent[i].safety_dis / 2, alpha=0.1, color=self_color[i]))
+                    axes.add_patch(Circle(xy=(xf_i, yf_i), radius=agents.agent[i].radius, alpha=0.3, color=self_color[i]))
+            else:
+                axes.plot(xf, yf, traj_type, color=self_color[i], markersize='0.5')
+                theta_f = agents.agent[i].target_state[2]
+                axes.add_patch(Circle(xy=(xf, yf), radius=agents.agent[i].safety_dis / 2, alpha=0.1, color=self_color[i]))
+                axes.add_patch(Circle(xy=(xf, yf), radius=agents.agent[i].radius, alpha=0.3, color=self_color[i]))
 
             # plot the car direction at the target state
             agent_radius = agents.agent[i].radius
@@ -1916,42 +2093,35 @@ class DrawClass:
         """
         agent = agents.agent[0]
         radius = agents.agent[0].safety_dis / 2
-        xmin = min(agent.initial_state[0] - radius, agent.target_state[0] - radius)
-        xmax = max(agent.initial_state[0] + radius, agent.target_state[0] + radius)
-        ymin = min(agent.initial_state[1] - radius, agent.target_state[1] - radius)
-        ymax = max(agent.initial_state[1] + radius, agent.target_state[1] + radius)
+
+        agent_target = np.asarray(agent.target_state)
+
+        xmin = 1000000
+        xmax = -1000000
+        ymin = xmin
+        ymax = xmax
+        for k in range(agent_target.shape[0]):
+            target_state = agent_target[k, :]
+            xmin = min(xmin, agent.initial_state[0] - radius, target_state[0] - radius)
+            xmax = max(xmax, agent.initial_state[0] + radius, target_state[0] + radius)
+            ymin = min(ymin, agent.initial_state[1] - radius, target_state[1] - radius)
+            ymax = max(ymax, agent.initial_state[1] + radius, target_state[1] + radius)
 
         for i in range(1, agents.agent_num):
             agent = agents.agent[i]
             radius = agents.agent[i].safety_dis / 2
-            xmin_tmp = min(agent.initial_state[0] - radius, agent.target_state[0] - radius)
-            xmax_tmp = max(agent.initial_state[0] + radius, agent.target_state[0] + radius)
-            ymin_tmp = min(agent.initial_state[1] - radius, agent.target_state[1] - radius)
-            ymax_tmp = max(agent.initial_state[1] + radius, agent.target_state[1] + radius)
+            agent_target = np.asarray(agent.target_state)
+            for k in range(agent_target.shape[0]):
+                target_state = agent_target[k, :]
+                xmin = min(xmin, agent.initial_state[0] - radius, target_state[0] - radius)
+                xmax = max(xmax, agent.initial_state[0] + radius, target_state[0] + radius)
+                ymin = min(ymin, agent.initial_state[1] - radius, target_state[1] - radius)
+                ymax = max(ymax, agent.initial_state[1] + radius, target_state[1] + radius)
 
-            if xmin_tmp < xmin:
-                xmin = xmin_tmp
-
-            if ymin_tmp < ymin:
-                ymin = ymin_tmp
-
-            if xmax_tmp > xmax:
-                xmax = xmax_tmp
-
-            if ymax_tmp > ymax:
-                ymax = ymax_tmp
-
-        if xmin < plot_boundary[0]:
-            plot_boundary[0] = xmin
-
-        if ymin < plot_boundary[1]:
-            plot_boundary[1] = ymin
-
-        if xmax > plot_boundary[2]:
-            plot_boundary[2] = xmax
-
-        if ymax > plot_boundary[3]:
-            plot_boundary[3] = ymax
+        plot_boundary[0] = min(xmin, plot_boundary[0])
+        plot_boundary[1] = min(ymin, plot_boundary[1])
+        plot_boundary[2] = max(xmax, plot_boundary[2])
+        plot_boundary[3] = max(ymax, plot_boundary[3])
 
         return plot_boundary
 
