@@ -1083,10 +1083,16 @@ def calc_total_distance_error(agents: MultiAgents):
     """
     total_error = 0
     error_list = []
+
     for i in range(agents.agent_num):
+        if (agents.agent[i].target_state).shape[0] > 1:
+            target_state = agents.agent[i].target_state[-1, :2]
+        else:
+            target_state = agents.agent[i].target_state[:2]
+
         # update error
         start_p = [agents.agent[i].position[0], agents.agent[i].position[1]]
-        end_p = [agents.agent[i].target_state[0], agents.agent[i].target_state[1]]
+        end_p = [target_state[0], target_state[1]]
 
         dis = math.dist(start_p, end_p)
         error_list.append(dis)
@@ -1763,41 +1769,45 @@ def update_boundary_with_agents(plot_boundary, agents):
     """
     agent = agents.agent[0]
     radius = agents.agent[0].safety_dis / 2
-    xmin = min(agent.initial_state[0] - radius, agent.target_state[0] - radius)
-    xmax = max(agent.initial_state[0] + radius, agent.target_state[0] + radius)
-    ymin = min(agent.initial_state[1] - radius, agent.target_state[1] - radius)
-    ymax = max(agent.initial_state[1] + radius, agent.target_state[1] + radius)
+
+    agent_target = np.asarray(agent.target_state)
+
+    xmin = 1000000
+    xmax = -1000000
+    ymin = xmin
+    ymax = xmax
+    for k in range(agent_target.shape[0]):
+        target_state = agent_target[k, :]
+        xmin = min(xmin, agent.initial_state[0] - radius, target_state[0] - radius)
+        xmax = max(xmax, agent.initial_state[0] + radius, target_state[0] + radius)
+        ymin = min(ymin, agent.initial_state[1] - radius, target_state[1] - radius)
+        ymax = max(ymax, agent.initial_state[1] + radius, target_state[1] + radius)
 
     for i in range(1, agents.agent_num):
         agent = agents.agent[i]
         radius = agents.agent[i].safety_dis / 2
-        xmin_tmp = min(agent.initial_state[0] - radius, agent.target_state[0] - radius)
-        xmax_tmp = max(agent.initial_state[0] + radius, agent.target_state[0] + radius)
-        ymin_tmp = min(agent.initial_state[1] - radius, agent.target_state[1] - radius)
-        ymax_tmp = max(agent.initial_state[1] + radius, agent.target_state[1] + radius)
+        agent_target = np.asarray(agent.target_state)
+        for k in range(agent_target.shape[0]):
+            target_state = agent_target[k, :]
+            xmin = min(xmin, agent.initial_state[0] - radius, target_state[0] - radius)
+            xmax = max(xmax, agent.initial_state[0] + radius, target_state[0] + radius)
+            ymin = min(ymin, agent.initial_state[1] - radius, target_state[1] - radius)
+            ymax = max(ymax, agent.initial_state[1] + radius, target_state[1] + radius)
 
-        if xmin_tmp < xmin:
-            xmin = xmin_tmp
-
-        if ymin_tmp < ymin:
-            ymin = ymin_tmp
-
-        if xmax_tmp > xmax:
-            xmax = xmax_tmp
-
-        if ymax_tmp > ymax:
-            ymax = ymax_tmp
-
-    if xmin < plot_boundary[0]:
-        plot_boundary[0] = xmin
-
-    if ymin < plot_boundary[1]:
-        plot_boundary[1] = ymin
-
-    if xmax > plot_boundary[2]:
-        plot_boundary[2] = xmax
-
-    if ymax > plot_boundary[3]:
-        plot_boundary[3] = ymax
+    plot_boundary[0] = min(xmin, plot_boundary[0])
+    plot_boundary[1] = min(ymin, plot_boundary[1])
+    plot_boundary[2] = max(xmax, plot_boundary[2])
+    plot_boundary[3] = max(ymax, plot_boundary[3])
+    # if xmin < plot_boundary[0]:
+    #     plot_boundary[0] = xmin
+    #
+    # if ymin < plot_boundary[1]:
+    #     plot_boundary[1] = ymin
+    #
+    # if xmax > plot_boundary[2]:
+    #     plot_boundary[2] = xmax
+    #
+    # if ymax > plot_boundary[3]:
+    #     plot_boundary[3] = ymax
 
     return plot_boundary
