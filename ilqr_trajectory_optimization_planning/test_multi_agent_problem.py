@@ -74,8 +74,9 @@ if __name__ == '__main__':
 
     # test_open_case()
 
-    test_narrow_way_case()
-    # sim.demo_narrow_way_2_agents(solver="Centralized", adaptive_backup_weight=True)
+    # sim.demo_open_2_agents(solver="IPG", use_multi_thread=True)
+    # test_narrow_way_case()
+    # sim.demo_narrow_way_2_agents(solver="IPG", adaptive_backup_weight=True)
     # agent_solver1, agent_solver2 = test_narrow_way_case_hetero_solvers()
     # sim.demo_narrow_way_2_agents_hetero_solver(solver="Hetero", hetero_solver=agent_solver1, use_multi_thread=True)
     # sim.demo_narrow_way_2_agents_hetero_solver(solver="Hetero", hetero_solver=agent_solver2, use_multi_thread=True)
@@ -85,3 +86,6 @@ if __name__ == '__main__':
     '''Test Finish planning function'''
     # sim.finish_closed_loop_demo(
     #     folder_name="2_agent_Centralized_1014022515/")
+
+    ''' Test Time-Varying Goal '''
+    sim.demo_timeVaryingGoal_2_agents(use_multi_thread=True)

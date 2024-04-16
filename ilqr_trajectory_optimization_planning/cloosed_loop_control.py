@@ -937,6 +937,157 @@ def sim_Heterogeneous(agents, hetero_solver, sim_time, random_boundary=None, bou
     print("Plotting Time : {} sec".format((end - start)))
     print("... Done !")
 
+def sim_IPG_TimeVaryingGoal(agents, sim_time, random_boundary=None, boundary=None, circle_obstacle=None,
+                 sim_num=None, start_sim_num=0, use_multi_thread=True, adaptive_backup_weight=False, draw_timestep_plot=True):
+    sim_name = "IPG_TimeVaryingGoal"
+
+    # create folder
+    fig_folder, folder = create_folder(agents.agent_num, sim_name)
+
+    # parameter
+    Ts, N, constraints_threshold, boundary_info, boundary, plot_boundary = initialize_params(agents, sim_time, boundary)
+
+    # save information
+    save_info(
+        folder_name=fig_folder,
+        agents=agents,
+        boundary=boundary_info,
+        horizon=N,
+        solver_type=sim_name,
+        constraints_threshold=constraints_threshold,
+        circle_obs=circle_obstacle,
+        boundary_range=random_boundary,
+        adaptive_backup_weight=adaptive_backup_weight)
+
+    # save environment plot
+    draw_fxn.save_env_setting(agents, plot_boundary, folder + "environment", boundary=boundary_info,
+                              circle_obs=circle_obstacle)
+
+    ######################################
+    # Solve with iLQR
+    ######################################
+
+    # create thread if using multi-thread
+    thread_pool = None
+    if use_multi_thread:
+        thread_pool = concurrent.futures.ThreadPoolExecutor(max_workers=THREAD_NUM)
+
+    # update U reference
+    for i in range(agents.agent_num):
+        agents.agent[i].control_opt_series = np.zeros((N, agents.input_dim * agents.agent_num))
+
+    # create solver parameters
+    total_error, error_list = calc_total_distance_error(agents)
+    solved_time = onp.zeros((1, agents.agent_num))
+    if start_sim_num > 0:
+        solved_time = onp.zeros((start_sim_num + 1, agents.agent_num))
+
+    # set the starting and stopping time step
+    time_step = start_sim_num
+    stop_num = N
+    if sim_num is not None:
+        stop_num = sim_num
+
+    total_start = time.perf_counter()
+    while (time_step <= stop_num):
+
+        if adaptive_backup_weight:
+            agents = update_cost_args_with_adaptive_backup_weight(agents, error_list)
+
+        cost = 0.0
+        start = time.perf_counter()
+
+        if use_multi_thread:
+            run_thread_num = math.ceil(agents.agent_num / THREAD_NUM)
+            agent_count = 0
+            for j in range(run_thread_num):
+                thread_num_start = THREAD_NUM * j
+                thread_num_end = THREAD_NUM * (j + 1)
+                if thread_num_end > agents.agent_num:
+                    thread_num_end = agents.agent_num
+
+                results = [thread_pool.submit(single_agent_plan_IPG_TimeVaryingGoal,
+                                              agents, i, circle_obstacle, N, Ts, constraints_threshold,
+                                              boundary_info, fig_folder, time_step)
+                           for i in range(thread_num_start, thread_num_end)]
+
+                concurrent.futures.wait(results)
+
+                # calc cost
+                for result in results:
+                    cost = cost + result.result()[0]
+                    solved_time[time_step, agent_count] = result.result()[1]
+                    agent_count += 1
+        else:
+            for i in range(agents.agent_num):
+                single_cost, solve_time = single_agent_plan_IPG_TimeVaryingGoal(
+                    agents, i, circle_obstacle, N, Ts,
+                    constraints_threshold, boundary_info, fig_folder, time_step)
+
+                # calc cost
+                cost += single_cost
+                solved_time[time_step, i] = solve_time
+
+        # check collision
+        no_collision = check_collision(agents, constraints_threshold=SOL_FEAS_THRESHOLD, obs=circle_obstacle)
+        # update plot boundary & agent position
+        for i in range(agents.agent_num):
+            x_opt = agents.agent[i].sol_series[-1][0]
+            plot_boundary = draw_fxn.update_plot_boundary(plot_boundary, agents, x_opt)
+            agents.agent[i].position = agents.agent[i].next_step_prediction
+            agents.agent[i].target_series = agents.agent[i].target_series + (agents.agent[i].target_state, )
+
+            # update target
+            half_N = round(N * 0.5)
+            if agents.agent[i].position[0] > (agents.agent[i].target_state[0, 0] - agents.agent[i].radius):
+                n1 = i * agents.state_dim
+                agents.agent[i].target_state = generate_timeViarying_goal(
+                    goal_1=x_opt[half_N, n1:n1 + 2], goal_2=x_opt[N, n1:n1 + 2], horizon=N)
+        # update total error
+        total_error, error_list = calc_total_distance_error(agents)
+
+        # save img
+        if draw_timestep_plot:
+            draw_fxn.save_timestep_plot(agents, plot_boundary, folder, time_step,
+                                        boundary=boundary, circle_obs=circle_obstacle, predict_other=True)
+
+        end = time.perf_counter()
+
+        solved_time = onp.append(solved_time, np.zeros((1, agents.agent_num)), axis=0)
+        solver_cost_time = max(solved_time[time_step, :])
+        other_cost_time = (end - start) - solver_cost_time
+
+        print(
+            f"time_step = {time_step}  solved = {solver_cost_time: .3f} (sec) | other = {other_cost_time: .3f} (sec) | err = {total_error:.3f} | cost = {cost:.3f}")
+        time_step += 1
+
+        if total_error < 1.0 or no_collision == False:
+            break
+
+    sim_num = time_step
+    total_end = time.perf_counter()
+    print("Total Execute Time : {} sec".format((total_end - total_start)))
+
+    ######################################
+    # Plot & Save
+    ######################################
+    start = time.perf_counter()
+
+    store_solved_time(fig_folder, solved_time=solved_time)
+    draw_fxn.save_solver_cost_time_plot(sim_name, solved_time, folder)
+
+    draw_fxn.save_multi_plot(agents, plot_boundary, folder, sim_num, boundary=boundary, circle_obs=circle_obstacle)
+
+    # save animate
+    draw_fxn.save_animate(agents, plot_boundary, folder, sim_num, boundary=boundary, circle_obs=circle_obstacle)
+
+    # save closed loop process plot
+    # img_list = draw_fxn.generate_constant_interval_img_list(sim_num, horizon=N, list_length=4)
+    # draw_fxn.save_closed_loop_process_plot(img_list, agents, plot_boundary, folder, boundary, circle_obstacle)
+
+    end = time.perf_counter()
+    print("Plotting Time : {} sec".format((end - start)))
+    print("... Done !")
 
 ##################################
 
@@ -1440,6 +1591,81 @@ def single_agent_plan_Brake(agents, agent_id, circle_obstacle, horizon, Ts, cons
     # store solution for regenerating same closed-loop simulation
     store_open_loop_solution_npz(fig_folder, i, sol,
                                  time_step)
+
+    # calc cost
+    cost = sol[8]
+
+    # calc ilqr solver executed time
+    solver_cost_time = end - start
+
+    return cost, solver_cost_time
+
+
+def single_agent_plan_IPG_TimeVaryingGoal(agents, agent_id, circle_obstacle, horizon, Ts,
+                                          constraints_threshold, boundary_info, fig_folder, time_step):
+    N = horizon
+    i = agent_id
+
+    agents_tmp = copy.deepcopy(agents)
+    # check how many agents can be seen
+    sense_list, new_agent_id = sense_agent(agent_id=i, agents=agents_tmp, circle_obs=circle_obstacle)
+
+    # build new multi-agents based on the sensor
+    agents_tmp.agent[i].rebuild_sense_control_opt_series(sense_list, N)
+    agents_tmp.agent_num = len(sense_list)
+
+    new_agents_tmp = copy.deepcopy(agents_tmp)
+    new_agents_tmp.agent = []
+    for sense_id in sense_list:
+        new_agents_tmp.agent.append(agents_tmp.agent[sense_id])
+
+    U = new_agents_tmp.agent[new_agent_id].control_opt_series
+    if not agents.agent[i].feasibility:
+        U = np.zeros(np.shape(U))
+
+    cost_args = generate_cost_args(new_agents_tmp)
+
+    start = time.perf_counter()
+
+    sol = ilqr_trajectory_planner.solve_IPG_timeVaryingGoal(
+        U=U,
+        agent_id=new_agent_id,
+        agents=new_agents_tmp,
+        N=N,
+        Ts=Ts,
+        cost_args=cost_args,
+        constraints_threshold=constraints_threshold,
+        boundary=boundary_info,
+        circle_obs=circle_obstacle)
+
+    end = time.perf_counter()
+    feas = check_solution_collision(N, sol[0], new_agents_tmp, obs=circle_obstacle)
+
+    # check feasibility
+    if agents.agent[i].feasibility and feas == False:
+        start = time.perf_counter()
+
+        sol = ilqr_trajectory_planner.solve_IPG_timeVaryingGoal(
+            U=np.zeros(np.shape(U)),
+            agent_id=new_agent_id,
+            agents=new_agents_tmp,
+            N=N,
+            Ts=Ts,
+            cost_args=cost_args,
+            constraints_threshold=constraints_threshold,
+            boundary=boundary_info,
+            circle_obs=circle_obstacle)
+
+        end = time.perf_counter()
+        feas = check_solution_collision(N, sol[0], new_agents_tmp, obs=circle_obstacle)
+
+    agents.agent[i].feasibility = feas
+
+    sol = rebuild_sense_sol(N, sol, sense_list=sense_list, agents=agents)
+    agents.agent[i].update(sol, i)
+
+    # store solution for regenerating same closed-loop simulation
+    store_open_loop_solution_npz(fig_folder, i, sol, time_step)
 
     # calc cost
     cost = sol[8]

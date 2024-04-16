@@ -53,6 +53,12 @@ class Simulation:
                               start_sim_num=start_sim_num,
                               time_step_and_safety_dis=time_step_and_safety_dis)
 
+        elif solver == "IPG_TimeVaryingGoal":
+            sim_IPG_TimeVaryingGoal(agents, sim_time=sim_time, sim_num=SIMULATION_NUMBER, boundary=boundary,
+                    random_boundary=random_boundary, circle_obstacle=circle_obs,
+                    use_multi_thread=use_multi_thread, adaptive_backup_weight=adaptive_backup_weight,
+                    start_sim_num=start_sim_num)
+
     def demo_open_2_agents(self, solver, use_multi_thread=False, adaptive_backup_weight=False, hetero_solver=None):
         """
        Trajectory planning with games, Open case
@@ -297,6 +303,67 @@ class Simulation:
                             use_multi_thread=use_multi_thread, circle_obs=circle_obs,
                             adaptive_backup_weight=adaptive_backup_weight, hetero_solver=False,
                             random_boundary=boundary)
+
+
+    ###############################################
+    # Path Following
+    ###############################################
+    def demo_timeVaryingGoal_2_agents(self, use_multi_thread=False, adaptive_backup_weight=False,
+                                     hetero_solver=None):
+        """
+            - 2 agents
+            - known others' waypoints
+        """
+
+        # boundary setting
+        boundary = onp.array([0, -3, 12, 3])
+
+        # decide horizon
+        sim_time = 4
+        horizon = round(4 / 0.1)  # In simulation, sampling time is fixed to 0.1s
+
+        # create agents target waypoints
+        agent1_target_waypoints = generate_timeViarying_goal(
+            goal_1=np.array([5.0, -1.0]), goal_2=np.array([8.0, 1.0]), horizon=horizon)
+        agent2_target_waypoints = generate_timeViarying_goal(
+            goal_1=np.array([5.0, 1.0]), goal_2=np.array([10.0, 1.0]), horizon=horizon)
+
+        # agents setting
+        agent_1 = SingleAgent(
+            initial_state=np.array([1.0, 1.0, 0.0, 0.0]),  # 3.2 2.5
+            target_state=agent1_target_waypoints,
+            Q=np.array([0.1, 0.1, 0, 0]),
+            R=np.array([0.1, 0.1]),
+            Dis_weight=40,
+            Back_weight=10,
+            safety_dis=1.2)  # 0.3
+        agent_2 = SingleAgent(
+            initial_state=np.array([1.0, 0.0, 0.0, 0]),  # 4.8 4.3
+            target_state=agent2_target_waypoints,
+            Q=np.array([0.1, 0.1, 0, 0]),
+            R=np.array([0.1, 0.1]),
+            Dis_weight=40,
+            Back_weight=10,
+            safety_dis=2.0)
+
+        agent_list = [agent_1, agent_2]
+
+        # create agents
+        agents = MultiAgents(agent_list, agent_num=len(agent_list))
+        agents.update_limit(v_limit=[-10, 10], a_limit=[-50, 50], w_limit=[-np.pi / 2, np.pi / 2])
+        for agent in agents.agent:
+            agent.is_goal_timeVarying = True
+
+        # circle obstacles setting
+        circle_obs = None  # self.narrow_way_obstacle_setting(circle_obstacle_num=2)
+
+        # set solver
+        solver = "IPG_TimeVaryingGoal"
+
+        # simulation
+        self.run_simulaiton(agents, boundary, solver, sim_time=sim_time,
+                            use_multi_thread=use_multi_thread, circle_obs=circle_obs,
+                            adaptive_backup_weight=adaptive_backup_weight, hetero_solver=hetero_solver)
 
     ###############################################
     # Function for finishing the interrupted demo
@@ -609,7 +676,7 @@ class Simulation:
         """
 
         agent_1 = SingleAgent(
-            initial_state=np.array([2.8, 0.0, 0.0, 0.0]),
+            initial_state=np.array([3.2, 0.0, 0.0, 0.0]),
             target_state=np.array([6.5, 0, 0, 0]),
             Q=np.array([0.01, 0.01, 0, 0]),
             R=np.array([1, 1]),
@@ -617,7 +684,7 @@ class Simulation:
             Back_weight=10,
             safety_dis=1.2)  # 0.3
         agent_2 = SingleAgent(
-            initial_state=np.array([5.2, 0.0, np.pi, 0]),
+            initial_state=np.array([4.8, 0.0, np.pi, 0]),
             target_state=np.array([1.5, 0.0, np.pi, 0]),
             Q=np.array([0.01, 0.01, 0, 0]),
             R=np.array([1, 1]),
