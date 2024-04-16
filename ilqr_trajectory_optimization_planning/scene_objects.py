@@ -134,6 +134,10 @@ class SingleAgent(object):
         self.stuck_agent_id = -1
         self.safety_dis_is_updated = False
 
+        # time-varying goal
+        self.target_series = tuple()
+        self.is_goal_timeVarying = False
+
     def update(self, sol, agent_id):
 
         u_opt = sol[1]
